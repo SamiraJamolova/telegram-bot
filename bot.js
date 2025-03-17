@@ -24,7 +24,7 @@ bot.onText(/\/start/, (msg) => {
       parse_mode: "Markdown",
       reply_markup: {
         keyboard: [
-          ["📖 O'zbek Tili, Yozish va O'qish", "📕 Rus Tili"],
+          ["📖 Ona tili , adabiyot ", "📕 Rus Tili"],
           ["📘 Ingliz Tili", "📗 Arab Tili"],
           ["🧮 Matematika", "🌏 Koreys Tili"],
           ["🎭 Qiziqarli mashg'ulotlar"],
