@@ -24,10 +24,13 @@ bot.onText(/\/start/, (msg) => {
       parse_mode: "Markdown",
       reply_markup: {
         keyboard: [
-          ["📖 Ona tili , adabiyot ", "📕 samira"],
+          ["📖 Ona tili , adabiyot ", "📕 Rus tili"],
           ["📘 Ingliz Tili", "📗 Arab Tili"],
           ["🧮 Matematika", "🌏 Koreys Tili"],
-          ["🎭 Qiziqarli mashg'ulotlar"],
+          ["🥼 Hamshiralik", "💊 Farmasevtika"],
+          ["🧪 Kimyo", "🧬 Biologiya"],
+          ["🧾 Tarix", "🖥️📑 Bugalteriya"],
+          ["🖥️ Kopmyuter","🧵 Modellashtirish",],
         ],
         resize_keyboard: true,
         one_time_keyboard: true,
