@@ -29,7 +29,7 @@ bot.onText(/\/start/, (msg) => {
           ["🧮 Matematika", "🌏 Koreys Tili"],
           ["🥼 Hamshiralik", "💊 Farmasevtika"],
           ["🧪 Kimyo", "🧬 Biologiya"],
-          ["🧾 Tarix", "🖥️📑 Bugalteriya"],
+          ["🧾 Tarix", "📑 Bugalteriya"],
           ["🖥️ Kopmyuter","🧵 Modellashtirish",],
         ],
         resize_keyboard: true,
