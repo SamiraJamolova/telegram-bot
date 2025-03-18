@@ -19,7 +19,7 @@ bot.onText(/\/start/, (msg) => {
 
   bot.sendMessage(
     chatId,
-    "🎓 *Mashhura Education* ga xush kelibsiz!\n\n📚 Bizning o'quv markazimizda quyidagi kurslar olib boriladi:\n\n• *O'zbek Tili, Yozish va O'qish*\n• *Rus Tili*\n• *Ingliz Tili*\n• *Arab Tili*\n• *Matematika*\n• *Koreys Tili*\n• *Qiziqarli mashg'ulotlar*\n\nIltimos, qiziqayotgan kursingizni tanlang:",
+    "🎓 *Mashhura Education* ga xush kelibsiz!\n\n📚 Bizning o'quv markazimizda quyidagi kurslar olib boriladi:\n\n• *Ona tili, adabiyot *\n• *Rus Tili*\n• *Ingliz Tili*\n• *Arab Tili*\n• *Matematika*\n• *Koreys Tili*\n• *Hamshiralik*\n• *Farmasevtika*\n• *Kimyo*\n• *Biologiya*\n• *Tarix*\n• *Bugalteriya*\n• *Kompyuter*\n• *Modellashtirish*\n\nIltimos, qiziqayotgan kursingizni tanlang:",
     {
       parse_mode: "Markdown",
       reply_markup: {
