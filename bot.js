@@ -1,81 +1,135 @@
-const TelegramBot = require('node-telegram-bot-api');
-const axios = require('axios');
+// Import required modules
+const TelegramBot = require("node-telegram-bot-api");
+const axios = require("axios");
 
-// Bot tokeningizni shu yerga yozing
-const token = '6525215749:AAGE_UO5FAHH5-8tCA68uXgyOP93NAsJ6ak';
-const targetBotToken = '8007247318:AAF3EGrcSTFwz0dmsUg3uoDjeZy8jS77HLM'; // Ma'lumot yuboriladigan bot
-const targetChatId = '1514472577'; // Ma'lumot yuboriladigan chat ID
-
-// Botni ishga tushiramiz
+// Your bot token
+const token = "7693220231:AAE5frk_zr7wmawu3NbVSecYarFR7NROAss";
 const bot = new TelegramBot(token, { polling: true });
 
-let userSteps = {};
-let userData = {};
+// Regions in Uzbekistan
+const regions = [
+  ["Toshkent", "Toshkent viloyati", "Andijon"],
+  ["Buxoro", "Fargʻona", "Xorazm"],
+  ["Samarqand", "Namangan", "Qashqadaryo"],
+  ["Surxondaryo", "Jizzax", "Sirdaryo"],
+  ["Navoiy", "Qoraqalpogʻiston"],
+];
 
-// /start komandasi
+// Start command
 bot.onText(/\/start/, (msg) => {
-    const chatId = msg.chat.id;
-    userSteps[chatId] = 'choosing_course';
+  const chatId = msg.chat.id;
 
-    bot.sendMessage(chatId, "Assalomu alaykum! \nBiznes Fabrika o'quv markaziga xush kelibsiz! Qaysi kurslarimizga qiziqish bildirmoqchisiz?", {
-        reply_markup: {
-            keyboard: [
-                ["IT dasturlash", "Kompyuter savodxonligi"],
-                ["Bugalteriya", "Uy hamshiraligi"],
-                ["Masajj kursi", "Qandolatchilik"],
-                ["Arab tili", "Ingliz tili"],
-                ["Koreys tili", "Rus tili"],
-                ["Matematika", "Tarix"],
-                ["Fizika", "Mental arifmetika"]
-            ],
-            resize_keyboard: true,
-            one_time_keyboard: true
-        }
+  bot.sendSticker(
+    chatId,
+    "CAACAgIAAxkBAAEJf7FlW_fqCZzvI6HDAFzD7_0D3ZAvdgACcRMAArV8OUhn-fVajChb1zAE"
+  );
+
+  goToMainMenu(chatId);
+});
+
+// Handle user messages
+bot.on("message", (msg) => {
+  const chatId = msg.chat.id;
+  const userMessage = msg.text;
+
+  if (userMessage === "🌦️ Ob-havo") {
+    const regionButtons = regions.map((row) =>
+      row.map((region) => ({ text: region }))
+    );
+
+    bot.sendMessage(chatId, "Viloyatingizni tanlang:", {
+      reply_markup: {
+        keyboard: [...regionButtons, [{ text: "🔙 Orqaga" }]],
+        resize_keyboard: true,
+        one_time_keyboard: false,
+      },
     });
+  } else if (userMessage === "🎰 Mini-o'yin") {
+    sendGameLink(chatId);
+  } else if (userMessage === "🔙 Orqaga") {
+    goToMainMenu(chatId);
+  } else if (regions.flat().includes(userMessage)) {
+    sendWeatherInfo(chatId, userMessage);
+  }
 });
 
-// Foydalanuvchi xabarlarini qayta ishlash
-bot.on('message', (msg) => {
-    const chatId = msg.chat.id;
-    const text = msg.text;
+// Go back to the main menu
+function goToMainMenu(chatId) {
+  bot.sendMessage(chatId, "🌟 Asosiy menyuga qaytdik", {
+    reply_markup: {
+      keyboard: [["🌦️ Ob-havo"], ["🎰 Mini-o'yin"]],
+      resize_keyboard: true,
+      one_time_keyboard: false,
+    },
+  });
+}
 
-    if (userSteps[chatId] === 'choosing_course' && text !== "/start") {
-        userSteps[chatId] = 'asking_name';
-        userData[chatId] = { kurs: text, sana: new Date().toLocaleString() };
+// Fetch and send weather information
+async function sendWeatherInfo(chatId, region) {
+  try {
+    const geoResponse = await axios.get(
+      `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(
+        region
+      )}&country=Uzbekistan&format=json`
+    );
 
-        bot.sendMessage(chatId, `Siz \"${text}\" kursini tanladingiz!\nIltimos, ismingizni kiriting. \nMisol uchun: *Ziyovuddin*`, { parse_mode: 'Markdown' });
-
-    } else if (userSteps[chatId] === 'asking_name') {
-        userSteps[chatId] = 'asking_phone';
-        userData[chatId].ism = text;
-
-        bot.sendMessage(chatId, `Rahmat, *${text}*! Endi iltimos, telefon raqamingizni yuboring.`, {
-            parse_mode: 'Markdown',
-            reply_markup: {
-                keyboard: [[{ text: "📞 Telefon raqamni yuborish", request_contact: true }]],
-                resize_keyboard: true,
-                one_time_keyboard: true
-            }
-        });
-
-    } else if (msg.contact) {
-        userData[chatId].telefon = msg.contact.phone_number;
-
-        bot.sendMessage(chatId, "✅ Sizning ma'lumotlaringiz qabul qilindi! Tez orada siz bilan bog'lanamiz. Rahmat!", {
-            reply_markup: { remove_keyboard: true }
-        });
-
-        // Ma'lumotni boshqa botga yuborish
-        const message = `📌 *Yangi ro'yxatga olish*\n\n📅 Sana: ${userData[chatId].sana}\n📚 Kurs: ${userData[chatId].kurs}\n👤 Ism: ${userData[chatId].ism}\n📞 Telefon: ${userData[chatId].telefon}`;
-
-        axios.post(`https://api.telegram.org/bot${targetBotToken}/sendMessage`, {
-            chat_id: targetChatId,
-            text: message,
-            parse_mode: 'Markdown'
-        }).catch(err => console.error('Xatolik yuz berdi:', err));
-
-        // Foydalanuvchi ma'lumotlarini o'chirish
-        delete userSteps[chatId];
-        delete userData[chatId];
+    if (geoResponse.data.length === 0) {
+      return bot.sendMessage(
+        chatId,
+        "❌ Joylashuv topilmadi. Qaytadan urinib ko‘ring."
+      );
     }
-});
+
+    const { lat, lon } = geoResponse.data[0];
+
+    const weatherResponse = await axios.get(
+      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
+    );
+
+    const weather = weatherResponse.data.current_weather;
+
+    const weatherStatus =
+      weather.weathercode < 3
+        ? "☀️ Quyoshli"
+        : weather.weathercode < 50
+        ? "⛅ Bulutli"
+        : "🌧️ Yomg‘irli";
+
+    bot.sendMessage(
+      chatId,
+      `✅ ${region} uchun ob-havo ma'lumotlari:\n🌡️ Harorat: ${weather.temperature}°C\n💨 Shamol: ${weather.windspeed} m/s\n${weatherStatus}`
+    );
+
+    bot.sendMessage(chatId, "🔙 Orqaga qaytish uchun tugmani bosing.", {
+      reply_markup: {
+        keyboard: [["🔙 Orqaga"]],
+        resize_keyboard: true,
+        one_time_keyboard: false,
+      },
+    });
+  } catch (error) {
+    console.error("Error:", error);
+    bot.sendMessage(
+      chatId,
+      "❌ Ob-havo ma’lumotlarini olishda xatolik yuz berdi. Keyinroq urinib ko‘ring."
+    );
+  }
+}
+
+// Send mini-game link
+function sendGameLink(chatId) {
+  bot.sendMessage(
+    chatId,
+    "🎰 Bu yerda qiziqarli mini-o'yin o'ynashingiz mumkin: [X va 0 o'yini](https://x-va-0-oyini.netlify.app)",
+    {
+      parse_mode: "Markdown",
+      reply_markup: {
+        keyboard: [["🔙 Orqaga"]],
+        resize_keyboard: true,
+        one_time_keyboard: false,
+      },
+    }
+  );
+}
+
+console.log("🌦️ Ob-havo va mini-game boti ishga tushdi!");
